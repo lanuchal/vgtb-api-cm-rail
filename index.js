@@ -21,25 +21,33 @@ db.connect(function (err) {
   if (err) {
     return console.error("error: " + err.message);
   }
-
   console.log("Connected to the MySQL server.");
 });
 
 app.get("/", (req, res) => {
   const ref_code = Date.now();
   var d = new Date(ref_code);
-  var result_time =
-    d.getFullYear() +
-    ("00" + (d.getMonth() + 1)).slice(-2) +
+  var date_now =
     ("00" + d.getDate()).slice(-2) +
+    "/" +
+    ("00" + (d.getMonth() + 1)).slice(-2) +
+    "/" +
+    d.getFullYear();
+  const time_now =
     ("00" + d.getHours()).slice(-2) +
+    "/" +
     ("00" + d.getMinutes()).slice(-2) +
+    ":" +
     ("00" + d.getSeconds()).slice(-2) +
-    ("00" + d.getUTCMilliseconds()).slice(-2);
-  // d.getUTCMilliseconds();
-  console.log(result_time);
-
-  res.send(result_time);
+    res.send([
+      {
+        title: "Welcom to wep api",
+        wep_api: "https://vgtb.devcm.info",
+        store: "ผักสดเชียงใมห่",
+        day: date_now,
+        time: time_now,
+      },
+    ]);
 });
 
 // ----------------------------  Product
@@ -52,21 +60,8 @@ app.get("/product", (req, res) => {
     }
   });
 });
-app.get("/productCate/:id", (req, res) => {
-  let id = req.params.id;
-  db.query(
-    "SELECT * FROM product WHERE product_cate = ?",
-    id,
-    (err, result) => {
-      if (err) {
-        console.log(err);
-      } else {
-        res.send(result);
-      }
-    }
-  );
-});
-app.get("/productCate/:id", (req, res) => {
+
+app.get("/productcate/:id", (req, res) => {
   let id = req.params.id;
   db.query(
     "SELECT * FROM product WHERE product_cate = ?",
@@ -85,8 +80,6 @@ app.get("/productCate/:id", (req, res) => {
 app.post("/login", (req, res) => {
   const user_username = req.body.user_username;
   const user_password = req.body.user_password;
-  console.log(user_username);
-  console.log(user_password);
   db.query(
     "SELECT * FROM user WHERE user_username = ?",
     user_username,
@@ -98,21 +91,34 @@ app.post("/login", (req, res) => {
         if (ln == 1 && result[0].user_password == user_password) {
           res.send([{ login: "ok", data: result }]);
         } else {
-          res.send([{ login: "nok" }]);
+          res.send([{ login: "nok", data: result }]);
         }
       }
     }
   );
 });
+
 app.post("/register", (req, res) => {
   const name = req.body.name;
   const user_username = req.body.user_username;
   const user_password = req.body.user_password;
   const addr = req.body.addr;
-  console.log(name);
-  console.log(user_username);
-  console.log(user_password);
-  var user_old = "";
+
+  const ref_code = Date.now();
+  var d = new Date(ref_code);
+  var result_time_a =
+    d.getFullYear() +
+    "-" +
+    ("00" + (d.getMonth() + 1)).slice(-2) +
+    "-" +
+    ("00" + d.getDate()).slice(-2) +
+    " " +
+    ("00" + d.getHours()).slice(-2) +
+    ":" +
+    ("00" + d.getMinutes()).slice(-2) +
+    ":" +
+    ("00" + d.getSeconds()).slice(-2);
+
   db.query(
     "SELECT * FROM user WHERE user_username = ?",
     user_username,
@@ -122,14 +128,24 @@ app.post("/register", (req, res) => {
       } else {
         const ln = result.length;
         if (ln == 1) {
-          res.send([{ result: "nok" }]);
+          res.send([{ result: "nok", data: result }]);
         } else {
           db.query(
-            "INSERT INTO user (name, user_username, user_password,addr) VALUES (?,?,?,?)",
-            [name, user_username, user_password, addr],
+            "INSERT INTO user (branch,name, user_username, user_password,user_type,addr,user_grade,user_status,date_register) VALUES (?,?,?,?,?,?,?,?,?)",
+            [
+              0,
+              name,
+              user_username,
+              user_password,
+              2,
+              addr,
+              "D",
+              9,
+              result_time_a,
+            ],
             (err, result) => {
               if (err) {
-                console.log(err);
+                // console.log(err);
               } else {
                 res.send([{ result: "ok", data: result }]);
               }
@@ -142,12 +158,11 @@ app.post("/register", (req, res) => {
 });
 app.get("/user/:id", (req, res) => {
   let id = req.params.id;
-
   db.query("SELECT * FROM user WHERE user_id = ?", id, (err, result) => {
     if (err) {
       console.log(err);
     } else {
-      res.send(result);
+      res.send([{ data: result }]);
     }
   });
 });
@@ -215,9 +230,8 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const id = req.body.id;
     const ref_code = Date.now();
-    console.log("id : " + id);
+    // console.log("id : " + id);
     var d = new Date(ref_code);
-
     var result_time =
       d.getFullYear() +
       ("00" + (d.getMonth() + 1)).slice(-2) +
@@ -252,7 +266,7 @@ app.post("/upload1", upload.single("profile1"), (req, res) => {
       console.log(err);
     } else {
       const imgName = result[0].user_img1;
-      console.log(result[0]);
+      // console.log(result[0]);
       if (imgName != null) {
         let resultName = imgName.substring(imgName.length - 27, imgName.length);
         const paths = "./upload/images/img1/" + resultName;
@@ -263,7 +277,7 @@ app.post("/upload1", upload.single("profile1"), (req, res) => {
           console.error("delete flase!!");
           // console.error(err);
         }
-        console.log(req.file.filename);
+        // console.log(req.file.filename);
       }
 
       const ln = result.length;
@@ -275,11 +289,11 @@ app.post("/upload1", upload.single("profile1"), (req, res) => {
       if (lastIm == "HEIC") {
         heicUp = fristIm.substring(0, fristIm.length - 5);
         lastIm = "jpg";
-        console.log("HEIC : " + heicUp);
-        convertImg1("img1",urlname);
+        // console.log("HEIC : " + heicUp);
+        convertImg1("img1", urlname);
         //
       }
-      console.log("lastIm = " + heicUp);
+      // console.log("lastIm = " + heicUp);
       if (ln == 1) {
         db.query(
           "UPDATE user SET  user_img1 = ? WHERE user_id =?",
@@ -314,7 +328,7 @@ const storage2 = multer.diskStorage({
   filename: (req, file, cb) => {
     const id = req.body.id;
     const ref_code = Date.now();
-    console.log("id : " + id);
+    // console.log("id : " + id);
     var d = new Date(ref_code);
 
     var result_time =
@@ -351,7 +365,7 @@ app.post("/upload2", upload2.single("profile2"), (req, res) => {
       console.log(err);
     } else {
       const imgName = result[0].user_img2;
-      console.log(result[0]);
+      // console.log(result[0]);
       if (imgName != null) {
         let resultName = imgName.substring(imgName.length - 27, imgName.length);
         const paths = "./upload/images/img2/" + resultName;
@@ -362,7 +376,7 @@ app.post("/upload2", upload2.single("profile2"), (req, res) => {
           console.error("delete flase!!");
           // console.error(err);
         }
-        console.log(req.file.filename);
+        // console.log(req.file.filename);
       }
 
       const ln = result.length;
@@ -374,8 +388,8 @@ app.post("/upload2", upload2.single("profile2"), (req, res) => {
       if (lastIm == "HEIC") {
         heicUp = fristIm.substring(0, fristIm.length - 5);
         lastIm = "jpg";
-        console.log("HEIC : " + heicUp);
-        convertImg1("img2",urlname);
+        // console.log("HEIC : " + heicUp);
+        convertImg1("img2", urlname);
         //
       }
       console.log("lastIm = " + heicUp);
@@ -405,7 +419,205 @@ app.post("/upload2", upload2.single("profile2"), (req, res) => {
     }
   });
 });
+
 // end upload photo1
+
+app.put("/updateuser", (req, res) => {
+  const id = req.body.id;
+  const name = req.body.name;
+  const addr = req.body.addr;
+  const user_tel = req.body.user_tel;
+  const addr_lat = req.body.addr_lat;
+  const addr_long = req.body.addr_long;
+  db.query(
+    "UPDATE user SET  name = ? , addr = ?, user_tel = ?,addr_lat = ?,addr_long = ? WHERE user_id =?",
+    [name, addr, user_tel, addr_lat, addr_long, id],
+    (error, results, fields) => {
+      if (error) throw error;
+      // let message = "";
+      if (results.changedRows === 0) {
+        res.send({
+          result: "false",
+          data: results,
+          message: "data not found or data are same",
+        });
+      } else {
+        res.send({
+          result: "ok",
+          data: results,
+          message: "data  sucsessfully update",
+        });
+      }
+    }
+  );
+});
+app.post("/select-product", (req, res) => {
+  const ref_code = Date.now();
+  var d = new Date(ref_code);
+  var result_time =
+    d.getFullYear() +
+    ("00" + (d.getMonth() + 1)).slice(-2) +
+    ("00" + d.getDate()).slice(-2) +
+    ("00" + d.getHours()).slice(-2) +
+    ("00" + d.getMinutes()).slice(-2) +
+    ("00" + d.getSeconds()).slice(-2);
+  // ("00" + d.getUTCMilliseconds()).slice(-2);
+  // d.getUTCMilliseconds();
+  var result_time_a =
+    d.getFullYear() +
+    "-" +
+    ("00" + (d.getMonth() + 1)).slice(-2) +
+    "-" +
+    ("00" + d.getDate()).slice(-2) +
+    " " +
+    ("00" + d.getHours()).slice(-2) +
+    ":" +
+    ("00" + d.getMinutes()).slice(-2) +
+    ":" +
+    ("00" + d.getSeconds()).slice(-2);
+  // console.log(result_time);
+
+  const id = req.body.id;
+  const product_id = req.body.product_id;
+  const price_id = req.body.price_id;
+  const pro_req_amount = req.body.pro_req_amount;
+  db.query(
+    "SELECT * FROM bill WHERE user_id = ? ORDER BY bill_ref_code DESC",
+    id,
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        if (!result[0] || result[0].bill_status != 1) {
+          // res.send({ ff: result });
+          db.query(
+            "INSERT INTO bill ( user_id,  bill_ref_code,bill_include_price,bill_deliv_price , bill_date , bill_status) VALUES (?,?,?,?,?,?)",
+            [id, result_time, 0, 0, result_time_a, 1],
+            (err, result) => {
+              if (err) {
+                console.log(err);
+              } else {
+                // res.send({
+                //   result: "ok",
+                //   data: result,
+                //   message: "insert bill success!!",
+                // });
+                // console.log(result.insertId);
+                db.query(
+                  "INSERT INTO product_request (bill_id, product_id, price_id,user_grade, pro_req_by, pro_req_amount, pro_req_date, pro_req_status) " +
+                    " VALUES (?,?,?,?,?,?,?,?)",
+                  [
+                    result.insertId,
+                    product_id,
+                    price_id,
+                    "A",
+                    id,
+                    pro_req_amount,
+                    result_time_a,
+                    1,
+                  ],
+                  (err, result) => {
+                    if (err) {
+                      res.send({
+                        result: "fail",
+                        data: result,
+                        message: "insert bill fail!!",
+                      });
+                    } else {
+                      // console.log("2");
+                      res.send({
+                        result: "ok",
+                        data: result,
+                        message: "insert bill success!!",
+                      });
+                    }
+                  }
+                );
+              }
+            }
+          );
+        } else {
+          db.query(
+            "SELECT * FROM product_request WHERE pro_req_by = ? ORDER BY bill_id DESC",
+            id,
+            (err, result) => {
+              if (err) {
+                console.log(err);
+              } else {
+                console.log(result[0].bill_id);
+                db.query(
+                  "INSERT INTO product_request (bill_id, product_id, price_id,user_grade, pro_req_by, pro_req_amount, pro_req_date, pro_req_status) " +
+                    " VALUES (?,?,?,?,?,?,?,?)",
+                  [
+                    result[0].bill_id,
+                    product_id,
+                    price_id,
+                    "A",
+                    id,
+                    pro_req_amount,
+                    result_time_a,
+                    1,
+                  ],
+                  (err, result) => {
+                    if (err) {
+                    } else {
+                      console.log("2");
+                      res.send({
+                        result: "ok",
+                        data: result,
+                        message: "insert bill_req success!!",
+                      });
+                    }
+                  }
+                );
+              }
+            }
+          );
+
+          // res.send({ tt: result });
+        }
+        // console.log(result);
+      }
+    }
+  );
+});
+app.get("/order/:id", (req, res) => {
+  let id = req.params.id;
+  
+  db.query(
+    "SELECT * FROM bill WHERE user_id = ? ORDER BY bill_ref_code DESC",
+    id,
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        // res.send(result[0]);
+        if (result[0].bill_status == 1) {
+          db.query(
+            "SELECT * FROM product_request WHERE bill_id = ?",
+            result[0].bill_id,
+            (err, result) => {
+              if (err) {
+                console.log(err);
+              } else {
+                res.send({
+                  result: "ok",
+                  data: result,
+                });
+              }
+            }
+          );
+        } else {
+          res.send({
+            result: "flase",
+            data: "get data fail!!!",
+          });
+        }
+      }
+    }
+  );
+});
+
 app.listen(PROT, () => {
   console.log("Yey, your server is running on port " + PROT);
 });

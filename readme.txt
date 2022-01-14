@@ -1,55 +1,58 @@
+get "/product" แสดง product ทั้งหมด
 
-https://api.vgtb-cm.com
+get "/productcate/:id" แสดง product ตาม type
 
-get 	/product 			แสดงสินค้าทั้งหมด
-
-get 	/productCate/:id 		แสดงสินค้าตามประเภท
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////	USER	 ////////////////////////////////////////////////////////////////////////
-post	/register			สมัครสมาชิก
-	{
-    	 	"name":"qwae",
-    		"user_username": "aaa",
-    		"user_password" : "qqq"
-	}
-
-post 	/login			login สมาชิก	
-	{
-    		"user_username": "Larbpak",
-    		"user_password" : "123456"
-	}
-
-get	/user/:id			select ข้อมูล user
-
-put	/updatepass		แก้ไขข้อมูล pass-user
-	{
-    		"id" : 153,
-    		old_password"33333",
-    		new_password: "55555"
-	}
-
-put	/updateuser 		แก้ไขข้อมูล user
-	{
-    		"id" : 153,
-    		"addr_number": "33333",
-    		"addr_tambon" : "55555",
-    		"addr_amper" : "9",
-    		"addr_provine": "33333",
-    		"addr_zipcode" : "55555",
-    		"addr_google_map" : "9",
-    		"name":"test"
-	}
-post 	/upload 	อัปโหลดรูปที่อยู่
-	{
-    		"id" : 153,
-    		"profile": "ไฟล์รูป"
-	}
-
-post 	/select-product	เลือกสินค้า
+post "/login" เช็คการ login
 {
-    "id": 36,
-    "product_id": 2,
-    "price_id": 22,
-    "pro_req_amount": 4
+    "user_username": 157,
+    "user_password":  "1234"
 }
-get /order/:id  เช็ค order ใน bill
+
+post "/register" สมัครวมาชิก
+{
+    "name": 157,
+    "user_username": 157,
+    "user_password":  "1234"
+    addr"12345" ;
+}
+
+get "/user/:id" แสดงข้อมูล user 
+
+put "/updatepass" แก้ไขรหัสผ่าน user
+{
+    "id": 157,
+    "old_password":  "1234"
+    "new_password":  "12345" ;
+}
+
+post "/upload1" อัปโหลดรูป img1 ( รูปที่อยู่ 1 )
+{
+    "id": 157,
+    "profile1":  ไฟล์
+}
+
+post "/upload2" อัปโหลดรูป img 2 ( รูปที่อยู่ 2 )
+{
+    "id": 157,
+    "profile2":  ไฟล์
+}
+
+put "/updateuser"   แก้ไข้ข้อมูล user
+{
+    "id": 157,
+    "name": "aaa",
+    "addr": "bbb",
+    "user_tel": "ccc",
+    "addr_lat": "ddd",
+    "addr_long": "eee"
+}
+
+post "/select-product" เลือกสินค้า
+{
+    "id": 157,
+    "product_id": 4,
+    "price_id": 2,
+    "pro_req_amount": 3
+}
+
+get "/order/:id" ดูรายการสินค้า
